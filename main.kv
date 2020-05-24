@@ -1,4 +1,9 @@
-Button:
-    text: "Trigger function"
-    on_release:
-        app.detect_handwriting()
+BoxLayout:
+    orientation: 'vertical'
+    Button:
+        size_hint: 1, .2
+        text: "Take Image"
+        on_release:
+            app.detect_handwriting()
+    Label:
+        id: message_label

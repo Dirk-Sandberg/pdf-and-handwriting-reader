@@ -11,6 +11,7 @@ class MainApp(App):
     def select_image(self):
         # Select a file from your device
         source_file_name = 'temp.jpg'
+        self.root.ids.message_label.text = 'Uploading image...'
         # Upload the file
 
         from google.cloud import storage
@@ -37,6 +38,7 @@ class MainApp(App):
         return destination_blob_name
 
     def hit_cloud_function(self, blob_name):
+        self.root.ids.message_label.text = 'Identifying text...'
         from urllib.parse import urlencode
         msg_data = urlencode({'message': blob_name})
         headers = {'Content-type': 'application/x-www-form-urlencoded',
@@ -53,5 +55,6 @@ class MainApp(App):
     def success(self, request, response):
         print("Success!")
         print(response)
+        self.root.ids.message_label.text = response
 
 MainApp().run()
