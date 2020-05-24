@@ -1,9 +1,9 @@
-from kivy.app import App
+from kivymd.app import MDApp
 from kivy.network.urlrequest import UrlRequest
 import certifi
 
 
-class MainApp(App):
+class MainApp(MDApp):
     source_file_name = 'temp.jpg'
 
     def take_image(self):
@@ -32,10 +32,13 @@ class MainApp(App):
     def select_image(self):
         # Select a file from your device
         self.take_image()
-        self.root.ids.message_label.text = 'Uploading image...'
+        self.root.ids.info_label.text = 'Uploading image...'
         # Upload the file
 
     def upload_image(self):
+        self.root.ids.spinner.opacity = 1
+        self.root.ids.spinner.color = self.theme_cls.primary_color
+
         from google.cloud import storage
 
         """Uploads a file to the bucket."""
@@ -61,7 +64,8 @@ class MainApp(App):
         self.hit_cloud_function(destination_blob_name)
 
     def hit_cloud_function(self, blob_name):
-        self.root.ids.message_label.text = 'Identifying text...'
+        self.root.ids.spinner.color = self.theme_cls.secondary_color
+        self.root.ids.info_label.text = 'Identifying text...'
         from urllib.parse import urlencode
         msg_data = urlencode({'message': blob_name})
         headers = {'Content-type': 'application/x-www-form-urlencoded',
@@ -73,11 +77,12 @@ class MainApp(App):
                    on_failure=self.error, on_error=self.error, on_success=self.success)
 
     def error(self, *args):
+        self.root.ids.spinner.opacity = 0
         print("Error", args)
 
     def success(self, request, response):
+        self.root.ids.spinner.opacity = 0
         print("Success!")
-        print(response)
         self.root.ids.message_label.text = response
 
 

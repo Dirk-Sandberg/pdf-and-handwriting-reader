@@ -1,9 +1,22 @@
-BoxLayout:
-    orientation: 'vertical'
-    Button:
-        size_hint: 1, .2
-        text: "Take Image"
-        on_release:
-            app.detect_handwriting()
-    Label:
-        id: message_label
+FloatLayout:
+    BoxLayout:
+        orientation: 'vertical'
+        MDLabel:
+            id: message_label
+        MDRaisedButton:
+            text: "Take Image"
+            pos_hint: {'center_x': .5, 'center_y': .5}
+            on_release:
+                app.detect_handwriting()
+        Widget:
+            size_hint_y: .1
+    MDSpinner:
+        id: spinner
+        size_hint: .25, .25
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        opacity: 0
+    MDLabel:
+        id: info_label
+        size_hint: 1, .1
+        pos_hint: {'center_x': .5, 'center_y': .25}
+        halign: 'center'
