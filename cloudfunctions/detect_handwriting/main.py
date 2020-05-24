@@ -45,20 +45,20 @@ def detect_handwriting(request):
         Response object using
         `make_response <http://flask.pocoo.org/docs/1.0/api/#flask.Flask.make_response>`.
     """
-    print("Function start")
     local_image = get_pdf_image('test.png')
-    print("done with get_pdf_image")
     output_text = perform_cloud_vision(local_image)
-    print("done with output text")
-    print(output_text)
 
     request_json = request.get_json()
+    try:
+        print('form requests', request.form)
+    except:
+        print("couldn't print form")
     if request.args and 'message' in request.args:
         return request.args.get('message')
     elif request_json and 'message' in request_json:
         return request_json['message']
     else:
-        return f'Hello World!'
+        return output_text
 
 
 
