@@ -1,10 +1,14 @@
 from kivymd.app import MDApp
 from kivy.network.urlrequest import UrlRequest
 import certifi
-
+from kivy.clock import Clock, mainthread
+import threading
 
 class MainApp(MDApp):
     source_file_name = 'temp.jpg'
+
+    def on_start(self):
+        self.image_upload_thread = threading.Thread(target=self.upload_image)
 
     def take_image(self):
         from plyer import camera
@@ -20,7 +24,12 @@ class MainApp(MDApp):
         if(exists(filepath)):
             print("Picture saved!", filepath)
             self.source_file_name = filepath
-            self.upload_image()
+            self.root.ids.info_label.text = 'Uploading image...'
+            self.root.ids.spinner.opacity = 1
+            self.root.ids.spinner.color = self.theme_cls.primary_color
+            self.root.do_layout()
+            self.image_upload_thread.start()
+
         else:
             print("Couldnt save picture")
 
@@ -32,12 +41,9 @@ class MainApp(MDApp):
     def select_image(self):
         # Select a file from your device
         self.take_image()
-        self.root.ids.info_label.text = 'Uploading image...'
         # Upload the file
 
-    def upload_image(self):
-        self.root.ids.spinner.opacity = 1
-        self.root.ids.spinner.color = self.theme_cls.primary_color
+    def upload_image(self, *args):
 
         from google.cloud import storage
 
@@ -63,8 +69,9 @@ class MainApp(MDApp):
 
         self.hit_cloud_function(destination_blob_name)
 
+    @mainthread
     def hit_cloud_function(self, blob_name):
-        self.root.ids.spinner.color = self.theme_cls.secondary_color
+        self.root.ids.spinner.color = self.theme_cls.accent_color
         self.root.ids.info_label.text = 'Identifying text...'
         from urllib.parse import urlencode
         msg_data = urlencode({'message': blob_name})
@@ -81,6 +88,7 @@ class MainApp(MDApp):
         print("Error", args)
 
     def success(self, request, response):
+        self.root.ids.info_label.text = ''
         self.root.ids.spinner.opacity = 0
         print("Success!")
         self.root.ids.message_label.text = response
