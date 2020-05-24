@@ -14,7 +14,6 @@ def get_pdf_image(pdf_image_url, local=False, cred_file=''):
 
     # Make an authenticated API request
     buckets = list(storage_client.list_buckets())
-    print(buckets)
     bucket = storage_client.get_bucket('oneline-server-test')
     blob = bucket.blob(pdf_image_url)
     blob.download_to_filename(output_filename)
@@ -23,13 +22,17 @@ def get_pdf_image(pdf_image_url, local=False, cred_file=''):
 def perform_cloud_vision(image_filename, local=False, cred_file=''):
     from google.cloud import vision
     from google.cloud.vision import types
-    client = vision.ImageAnnotatorClient.from_service_account_file(cred_file)
+    if local:
+        client = vision.ImageAnnotatorClient.from_service_account_file(cred_file)
+    else:
+        # If you don't specify credentials when constructing the client, the
+        # client library will look for credentials in the environment.
+        client = vision.ImageAnnotatorClient()
     with open(image_filename, 'rb') as f:
         content = f.read()
     image = vision.types.Image(content=content)
     response = client.document_text_detection(image=image)
     doc_text = response.full_text_annotation.text
-    print(doc_text)
     return doc_text
 
 
@@ -42,7 +45,13 @@ def detect_handwriting(request):
         Response object using
         `make_response <http://flask.pocoo.org/docs/1.0/api/#flask.Flask.make_response>`.
     """
-    get_pdf_image()
+    print("Function start")
+    local_image = get_pdf_image('test.png')
+    print("done with get_pdf_image")
+    output_text = perform_cloud_vision(local_image)
+    print("done with output text")
+    print(output_text)
+
     request_json = request.get_json()
     if request.args and 'message' in request.args:
         return request.args.get('message')
